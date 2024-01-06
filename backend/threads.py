@@ -9,11 +9,11 @@ if not OPENAI_API_KEY:
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 client = OpenAI()
 
-
-def create_main_assistant(
+def create_assistant(
     uploaded_files,
     problem_text,
     solution_text,
+    prompt,
 ):
     file_ids = []
     uploaded_logs = []
@@ -56,18 +56,7 @@ def create_main_assistant(
     message = client.beta.threads.messages.create(
         thread_id=thread.id,
         role="user",
-        content="""
-            Based on the information provided, generate a short Overview of the user's PROBLEM and 
-            its circular economy SOLUTION, and identify the Relevant Industries. You MUST adhere to
-            the following:
-            - Overview should be a brief but meaningful summary of the user's PROBLEM and its circular
-            economy SOLUTION
-            - Overview MUST be between 1-2 sentences long.
-            - If possible, identify between 1-3 Relevant Industries. If no specific industry is mentioned,
-            respond with "None".
-            You MUST format your response as a JSON object, using the following format:
-            {{Overview:'', Relevant Industries:''}}.
-        """,
+        content=prompt,
     )
     # print(message)
 
@@ -90,3 +79,5 @@ def create_main_assistant(
     )
     assistant_response = messages.data[0].content[0].text.value
     print(assistant_response)
+    
+

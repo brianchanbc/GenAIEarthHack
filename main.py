@@ -1,11 +1,37 @@
 import os
 import dotenv
 import streamlit as st
-from backend.threads import create_main_assistant
+from backend.threads import create_assistant
 
 # Load OpenAI API key
 
+OVERVIEW_PROMPT = """
+            Based on the information provided, generate a short Overview of the user's PROBLEM and 
+            its circular economy SOLUTION, and identify the Relevant Industries. You MUST adhere to
+            the following:
+            - Overview should be a brief but meaningful summary of the user's PROBLEM and its circular
+            economy SOLUTION
+            - Overview MUST be between 1-2 sentences long.
+            - If possible, identify between 1-3 Relevant Industries. If no specific industry is mentioned,
+            respond with "None".
+            You MUST format your response as a JSON object, using the following format:
+            {{Overview:'', Relevant Industries:''}}.
+            """
 
+SUSTAINABILITY_PROMPT = """Based on the information provided, you MUST do the following:
+                        1. Provide a comprehensive evaluation on how well the user's SOLUTION adheres to 
+                        each of the 3 principles of circular economy: 1) Eliminate waste and pollution, 
+                        2) Circulate products and materials (at their highest value), and 3) Regenerate nature.
+                        2. Provide a series of follow-up questions investors may ask the user with regard to
+                        their PROBLEM and SOLUTION.
+                        3. Provide a rating between 1 and 5 (highest) on how sustainable the user's SOLUTION is.
+                        You MUST format your response as a JSON object, using the following format:
+                        {{Eliminate waste and pollution:'', Circulate products and materials'', Regenerate nature, 
+                        Follow-Up Questions: '', Rating:''}}.
+                        """
+
+BUSINESS_PROMPT = ""
+IMPACT_INNOVATION_PROMPT = ""
 
 def main():
     # Initialize session state variables if they don't exist
@@ -37,7 +63,8 @@ def main():
 
         with st.spinner("Processing Input..."):
             # Handle file uploads
-            create_main_assistant(uploaded_files, problem_text, solution_text)
+            create_assistant(uploaded_files, problem_text, solution_text, OVERVIEW_PROMPT)
+            create_assistant(uploaded_files, problem_text, solution_text, SUSTAINABILITY_PROMPT)
 
 
     # Display chat history
