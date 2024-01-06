@@ -3,6 +3,7 @@ import dotenv
 import os
 import streamlit as st
 import time
+from .utils import extract_json
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
@@ -42,9 +43,10 @@ def create_assistant(
 
     # Create a new thread
     thread = client.beta.threads.create()
-    st.session_state["assistant"] = assistant
-    # Create a new thread
-    st.session_state["thread"] = thread
+    if assistant_id == "general_assistant":
+        st.session_state["assistant"] = assistant
+        # Create a new thread
+        st.session_state["thread"] = thread
 
     # Add a Message to a Thread
     message = client.beta.threads.messages.create(
@@ -72,8 +74,15 @@ def create_assistant(
         thread_id=thread.id
     )
     assistant_response = messages.data[0].content[0].text.value
-    st.session_state[assistant_id] = assistant_response.replace("```json","").replace("```","")
     
+    if assistant_id == "general_assistant":
+        st.session_state[assistant_id] = assistant_response.replace(
+            "```json", ""
+        ).replace("```", "")
+    else:
+        st.session_state[assistant_id] = extract_json(
+            assistant_response.replace("```json", "").replace("```", "")
+        )
     
     print(f"Time eplapsed: {time.time() - start_time}")
     

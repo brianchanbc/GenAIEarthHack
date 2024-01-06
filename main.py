@@ -2,7 +2,7 @@ import json
 import os
 import dotenv
 import streamlit as st
-from backend.threads import create_assistant
+from backend.threads import client, create_assistant
 import backend.instructions_and_prompts as ip
 
 # Load OpenAI API key
@@ -83,9 +83,16 @@ def main():
                 st.markdown(f"**Eliminate waste and pollution:** {Sustainability['Eliminate waste and pollution']}")
                 st.markdown(f"**Circulate products and materials:** {Sustainability['Circulate products and materials']}")
                 st.markdown(f"**Regenerate nature:** {Sustainability['Regenerate nature']}")
-
+                st.write("**Follow-Up Questions**")
                 for i, question in enumerate(Sustainability['Follow-Up Questions']):
-                    st.markdown(f"**Follow-Up Question {i+1}:** {question}")
+                    st.markdown(f"- {question}")
+                st.markdown('''
+                <style>
+                [dara-testid="stMarkdownContainer"] ul{
+                            padding-left:40px;
+                }
+                </style>                        
+                ''', unsafe_allow_html=True)
             
                 rating = Sustainability['Rating']
                 star_emoji_string = "⭐" * int(rating)
@@ -107,9 +114,28 @@ def main():
             Business = json.loads(st.session_state["bus_assistant"])
 
             with st.expander("Business Assessment"):
-                st.markdown(f"**Assessment::** {Business['Assessment']}")
+                st.write("Assessments")
+                for i, assessment in enumerate(Business['Assessment']):
+                    st.markdown(f"- {assessment}")
+
+                st.markdown('''
+                <style>
+                [dara-testid="stMarkdownContainer"] ul{
+                            padding-left:40px;
+                }
+                </style>                        
+                ''', unsafe_allow_html=True)
+
+                st.write("**Follow-Up Questions**")
                 for i, question in enumerate(Business['Follow-Up Questions']):
-                    st.markdown(f"**Follow-Up Question {i+1}:** {question}")
+                    st.markdown(f"- {question}")
+                st.markdown('''
+                <style>
+                [dara-testid="stMarkdownContainer"] ul{
+                            padding-left:40px;
+                }
+                </style>                        
+                ''', unsafe_allow_html=True)
                 rating = Business['Rating']
                 star_emoji_string = "⭐" * int(rating)
                 st.markdown(f"**Rating:** {star_emoji_string}")
@@ -131,13 +157,66 @@ def main():
             with st.expander("Impact and Innovation"):
                 st.markdown(f"**Impact:** {Impact_Innovation['Impact']}")
                 st.markdown(f"**Innovation:** {Impact_Innovation['Innovation']}")
-                for i, question in enumerate(Impact_Innovation['Follow-Up Questions']):
-                    st.markdown(f"**Follow-Up Question {i+1}:** {question}")
+                st.write("**Follow-Up Questions**")
+                for i, question in enumerate(Business['Follow-Up Questions']):
+                    st.markdown(f"- {question}")
+                st.markdown('''
+                <style>
+                [dara-testid="stMarkdownContainer"] ul{
+                            padding-left:40px;
+                }
+                </style>                        
+                ''', unsafe_allow_html=True)
                 rating = Impact_Innovation['Rating']
                 star_emoji_string = "⭐" * int(rating)
                 st.markdown(f"**Rating:** {star_emoji_string}")
+            
+            sus_text = f"""
+                {Sustainability['Eliminate waste and pollution']}
+                {Sustainability['Circulate products and materials']}
+                {Sustainability['Regenerate nature']}
+            """
+            
+            bus_text = f"""
+                {Business['Assessment']} 
+            """
+            
+            imp_text = f"""
+                {Impact_Innovation['Impact']}
+                {Impact_Innovation['Innovation']}
+            """
+            
+            with st.spinner("Processing Input..."):
+                client.beta.threads.messages.create(
+                        thread_id=st.session_state["thread"].id,
+                        role="user",
+                        content=ip.RECOMMENDATION_PROMPT.format(
+                            sustainability_text=sus_text, 
+                            business_text=bus_text, 
+                            impact_innovation_text=imp_text),
+                    )
 
-
+                # Run the assistant
+                run = client.beta.threads.runs.create(
+                    thread_id=st.session_state["thread"].id,
+                    assistant_id=st.session_state["assistant"].id,
+                )
+                
+                while run.status != "completed":
+                # Check the run status
+                    run = client.beta.threads.runs.retrieve(
+                        thread_id=st.session_state["thread"].id,
+                        run_id=run.id
+                    )
+            
+                # Display the assistant's response
+                messages = client.beta.threads.messages.list(
+                    thread_id=st.session_state["thread"].id
+                )
+                assistant_response = messages.data[0].content[0].text.value
+                st.session_state["general_assistant"] = assistant_response.replace("```json","").replace("```","")
+                print(st.session_state["general_assistant"])
+                
             Recommendation = {
                 "1": "xxxxxxx",
                 "2": "xxxxxxxx",
