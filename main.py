@@ -4,10 +4,7 @@ import streamlit as st
 from backend.threads import create_main_assistant
 
 # Load OpenAI API key
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-if not OPENAI_API_KEY:
-    dotenv.load_dotenv(".env")
-    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
 
 
 def main():
@@ -41,50 +38,49 @@ def main():
         with st.spinner("Processing Input..."):
             # Handle file uploads
             create_main_assistant(uploaded_files, problem_text, solution_text)
-            print(st.session_state["assistant"] )
 
 
     # Display chat history
-    # for message in st.session_state.messages:
-    #     if message["role"] == "assistant":
-    #         st.chat_message("assistant").write(message["content"])
-    #     else:
-    #         st.chat_message("user").write(message["content"])
+    for message in st.session_state.messages:
+        if message["role"] == "assistant":
+            st.chat_message("assistant").write(message["content"])
+        else:
+            st.chat_message("user").write(message["content"])
 
-    # # Chat input for interaction
-    # if st.session_state["assistant"]:
-    #     if prompt := st.chat_input("Enter your message here"):
-    #         user_message = {"role": "user", "content": prompt}
-    #         st.session_state.messages.append(user_message)
+    # Chat input for interaction
+    if st.session_state["assistant"]:
+        if prompt := st.chat_input("Enter your message here"):
+            user_message = {"role": "user", "content": prompt}
+            st.session_state.messages.append(user_message)
 
-    #         # Display user message immediately in the chat history
-    #         st.chat_message("user").write(prompt)
+            # Display user message immediately in the chat history
+            st.chat_message("user").write(prompt)
 
-    #         message = client.beta.threads.messages.create(
-    #             thread_id=st.session_state["thread"].id, role="user", content=prompt
-    #         )
+            message = client.beta.threads.messages.create(
+                thread_id=st.session_state["thread"].id, role="user", content=prompt
+            )
 
-    #         with st.chat_message("assistant"):
-    #             with st.spinner("Waiting for the assistant's response..."):
-    #                 run = client.beta.threads.runs.create(
-    #                     thread_id=st.session_state["thread"].id,
-    #                     assistant_id=st.session_state["assistant"].id,
-    #                 )
+            with st.chat_message("assistant"):
+                with st.spinner("Waiting for the assistant's response..."):
+                    run = client.beta.threads.runs.create(
+                        thread_id=st.session_state["thread"].id,
+                        assistant_id=st.session_state["assistant"].id,
+                    )
 
-    #                 while run.status != "completed":
-    #                     run = client.beta.threads.runs.retrieve(
-    #                         thread_id=st.session_state["thread"].id, run_id=run.id
-    #                     )
+                    while run.status != "completed":
+                        run = client.beta.threads.runs.retrieve(
+                            thread_id=st.session_state["thread"].id, run_id=run.id
+                        )
 
-    #                 messages = client.beta.threads.messages.list(
-    #                     thread_id=st.session_state["thread"].id
-    #                 )
-    #                 assistant_response = messages.data[0].content[0].text.value
+                    messages = client.beta.threads.messages.list(
+                        thread_id=st.session_state["thread"].id
+                    )
+                    assistant_response = messages.data[0].content[0].text.value
 
-    #                 st.session_state.messages.append(
-    #                     {"role": "assistant", "content": assistant_response}
-    #                 )
-    #                 st.write(assistant_response.replace("$", "\$"))
+                    st.session_state.messages.append(
+                        {"role": "assistant", "content": assistant_response}
+                    )
+                    st.write(assistant_response.replace("$", "\$"))
 
 
 if __name__ == "__main__":

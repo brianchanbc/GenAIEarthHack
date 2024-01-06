@@ -1,6 +1,12 @@
 from openai import OpenAI
+import dotenv
+import os
 import streamlit as st
 
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+if not OPENAI_API_KEY:
+    dotenv.load_dotenv(".env")
+    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 client = OpenAI()
 
 
@@ -45,3 +51,42 @@ def create_main_assistant(
     st.session_state["assistant"] = assistant
     # Create a new thread
     st.session_state["thread"] = thread
+
+    # Add a Message to a Thread
+    message = client.beta.threads.messages.create(
+        thread_id=thread.id,
+        role="user",
+        content="""
+            Based on the information provided, generate a short Overview of the user's PROBLEM and 
+            its circular economy SOLUTION, and identify the Relevant Industries. You MUST adhere to
+            the following:
+            - Overview should be a brief but meaningful summary of the user's PROBLEM and its circular
+            economy SOLUTION
+            - Overview MUST be between 1-2 sentences long.
+            - If possible, identify between 1-3 Relevant Industries. If no specific industry is mentioned,
+            respond with "None".
+            You MUST format your response as a JSON object, using the following format:
+            {{Overview:'', Relevant Industries:''}}.
+        """,
+    )
+    # print(message)
+
+    # Run the assistant
+    run = client.beta.threads.runs.create(
+        thread_id=thread.id,
+        assistant_id=assistant.id,
+    )
+    
+    while run.status != "completed":
+    # Check the run status
+        run = client.beta.threads.runs.retrieve(
+            thread_id=thread.id,
+            run_id=run.id
+        )
+    
+    # Display the assistant's response
+    messages = client.beta.threads.messages.list(
+        thread_id=thread.id
+    )
+    assistant_response = messages.data[0].content[0].text.value
+    print(assistant_response)
