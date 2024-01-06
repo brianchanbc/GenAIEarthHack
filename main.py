@@ -22,51 +22,40 @@ def main():
 
     client = OpenAI()
 
-    # Create two columns for the layout
+    # Create layout for Problem and Solution input
     col1, col2 = st.columns(2)
-
-    # Text area for user to type in context or ideas in the first column
     with col1:
-        typed_text = st.text_area("Type in your ideas here:", height=150)
-
-    # File uploader for PDFs in the second column
+        problem_text = st.text_area("Describe the Problem:", height=150)
     with col2:
-        uploaded_files = st.file_uploader("Upload PDF files here:", 
-                                          type=["pdf"], 
-                                          accept_multiple_files=True,
-                                          label_visibility='visible')
+        solution_text = st.text_area("Propose a Solution:", height=150)
 
-    # Process input (files or typed text)
+    # File uploader for PDFs
+    uploaded_files = st.file_uploader("Upload PDF files here:", type=["pdf"], accept_multiple_files=True)
+
+    # Process input
     if st.button('Process Input'):
         file_ids = []
         uploaded_logs = []
         st.session_state['uploaded_button_clicked'] = True
-
-        # Reset messages to avoid re-sending old messages
         st.session_state['messages'] = []
 
         with st.spinner('Processing Input...'):
             # Handle file uploads
             for uploaded_file in uploaded_files:
                 file_content = uploaded_file.read()
-                oai_uploaded_file = client.files.create(
-                    file=file_content,
-                    purpose='assistants'
-                )
+                oai_uploaded_file = client.files.create(file=file_content, purpose='assistants')
                 uploaded_log = {"file_name": uploaded_file.name, "file_id": oai_uploaded_file.id}
                 uploaded_logs.append(uploaded_log)
                 file_ids.append(oai_uploaded_file.id)
 
-            # Create assistant with context from uploaded files and/or typed text
-            typed_text_log = f"Typed Text Context: {typed_text}" if typed_text else ""
+            # Create assistant with context from Problem, Solution, and uploaded files
+            context_log = f"Problem: {problem_text}\nSolution: {solution_text}" if problem_text or solution_text else ""
+            file_context_log = f"File Context: {str(uploaded_logs)}"
             assistant = client.beta.assistants.create(
                 instructions=f"""
-                You are a helpful assistant for answering questions based on uploaded files and/or typed text context. 
-                Here's your file_id and file_name mapping:
-                {str(uploaded_logs)}
-
-                {typed_text_log}
-
+                You are a helpful assistant for answering questions based on Problem, Solution, and uploaded files.
+                {context_log}
+                {file_context_log}
                 Please use this information to understand the context of the user's questions.
                 """,
                 model="gpt-4-1106-preview",
@@ -76,9 +65,7 @@ def main():
             st.session_state['assistant'] = assistant
 
             # Create a new thread
-            thread = client.beta.threads.create(
-                messages=st.session_state.messages
-            )
+            thread = client.beta.threads.create(messages=st.session_state.messages)
             st.session_state['thread'] = thread
 
     # Display chat history
