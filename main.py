@@ -11,6 +11,8 @@ if not OPENAI_API_KEY:
 
 def main():
     # Initialize session state variables if they don't exist
+    if "show_report" not in st.session_state:
+        st.session_state["show_report"] = False
     if 'uploaded_button_clicked' not in st.session_state:
         st.session_state['uploaded_button_clicked'] = False
     if 'messages' not in st.session_state:
@@ -31,11 +33,12 @@ def main():
 
     # File uploader for PDFs
     uploaded_files = st.file_uploader("Upload PDF files here:", type=["pdf"], accept_multiple_files=True)
-
     # Process input
     if st.button('Process Input'):
+        flag = True
         file_ids = []
         uploaded_logs = []
+        st.session_state["show_report"] = True
         st.session_state['uploaded_button_clicked'] = True
         st.session_state['messages'] = []
 
@@ -68,6 +71,8 @@ def main():
             thread = client.beta.threads.create(messages=st.session_state.messages)
             st.session_state['thread'] = thread
 
+        # JSON Data Definitions
+    if st.session_state["show_report"] == True:
         Report = {
             "Report": {
                 "Overview": "This section provides a general summary and overall context.",
@@ -101,6 +106,8 @@ def main():
             "2": "xxxxxxxx",
             "3": "xxxxxxxx"
         }
+
+        # Display JSON Data
         st.title("Project Evaluation Report")
 
         st.header("Report Overview")
@@ -108,7 +115,6 @@ def main():
         st.write(Report["Report"]["Overview"])
         st.subheader("Industry")
         st.write(Report["Report"]["Industry"])
-
 
         with st.expander("Sustainability"):
             st.markdown(f"**Rating:** {Sustainability['Sustainability']['Rating']}")
@@ -128,12 +134,7 @@ def main():
             for key, value in Recommendation.items():
                 st.markdown(f"- **Recommendation {key}:** {value}")
 
-
-
-
-
-        
-
+    # Chat Interaction
     # Display chat history
     for message in st.session_state.messages:
         if message["role"] == "assistant":
@@ -182,5 +183,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
