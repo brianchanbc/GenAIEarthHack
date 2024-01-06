@@ -108,8 +108,7 @@ def main():
             Business = json.loads(st.session_state["bus_assistant"])
 
             with st.expander("Business Assessment"):
-                for i, assessment in enumerate(Business['Assessment']):
-                    st.markdown(f'<span style="font-size: 20px;"><b>Assessment {i+1}:</b></span> {assessment}', unsafe_allow_html=True)
+                st.markdown(f'<span style="font-size: 20px;"><b>Assessment:</b></span> {Business["Assessment"]}', unsafe_allow_html=True)
                 for i, question in enumerate(Business['Follow-Up Questions']):
                     st.markdown(f'<span style="font-size: 20px;"><b>Follow-Up Question {i+1}:</b></span> {question}', unsafe_allow_html=True)
                 rating = Business['Rating']
