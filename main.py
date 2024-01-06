@@ -68,6 +68,72 @@ def main():
             thread = client.beta.threads.create(messages=st.session_state.messages)
             st.session_state['thread'] = thread
 
+        Report = {
+            "Report": {
+                "Overview": "This section provides a general summary and overall context.",
+                "Industry": "This is a section for industry"
+            }
+        }
+
+        Sustainability = {
+            "Sustainability": {
+                "Rating": "⭐⭐⭐⭐⭐",
+                "Q&A": "Your question and answer content here"
+            }
+        }
+
+        Business = {
+            "Business": {
+                "MarketPotential": "XXXXXXXX",
+                "Tech innovation": "XXXXXXXx",
+                "Q&A": "XXXXXXXXX?"
+            }
+        }
+
+        Impact_Innovation = {
+            "Impact": "XXXXXXX",
+            "Innovation": "XXXXXXXXX",
+            "Q&A": "XXXXX"
+        }
+
+        Recommendation = {
+            "1": "xxxxxxx",
+            "2": "xxxxxxxx",
+            "3": "xxxxxxxx"
+        }
+        st.title("Project Evaluation Report")
+
+        st.header("Report Overview")
+        st.subheader("Overview")
+        st.write(Report["Report"]["Overview"])
+        st.subheader("Industry")
+        st.write(Report["Report"]["Industry"])
+
+
+        with st.expander("Sustainability"):
+            st.markdown(f"**Rating:** {Sustainability['Sustainability']['Rating']}")
+            st.markdown(f"**Q&A:** {Sustainability['Sustainability']['Q&A']}")
+
+        with st.expander("Business Insights"):
+            st.markdown(f"**Market Potential:** {Business['Business']['MarketPotential']}")
+            st.markdown(f"**Tech Innovation:** {Business['Business']['Tech innovation']}")
+            st.markdown(f"**Q&A:** {Business['Business']['Q&A']}")
+
+        with st.expander("Impact and Innovation"):
+            st.markdown(f"**Impact:** {Impact_Innovation['Impact']}")
+            st.markdown(f"**Innovation:** {Impact_Innovation['Innovation']}")
+            st.markdown(f"**Q&A:** {Impact_Innovation['Q&A']}")
+
+        with st.expander("Recommendations"):
+            for key, value in Recommendation.items():
+                st.markdown(f"- **Recommendation {key}:** {value}")
+
+
+
+
+
+        
+
     # Display chat history
     for message in st.session_state.messages:
         if message["role"] == "assistant":
@@ -116,3 +182,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
