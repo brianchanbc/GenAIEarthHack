@@ -73,25 +73,28 @@ def main():
 
         # JSON Data Definitions
     if st.session_state["show_report"] == True:
-        Report = {
-            "Report": {
+        Overview = {
+            "Overview": {
                 "Overview": "This section provides a general summary and overall context.",
-                "Industry": "This is a section for industry"
+                "Relevant Industries": "This is a section for industry"
             }
         }
 
         Sustainability = {
             "Sustainability": {
-                "Rating": "⭐⭐⭐⭐⭐",
-                "Q&A": "Your question and answer content here"
+                "Eliminate waste and pollution:": "1",
+                "Circulate products and materials": "Your question and answer content here",
+                "Regenerate natural": "Your question and answer content here",
+                "Follow-Up Questions": ["XXXX", "yyyyy"],
+                "Rating": "3",
             }
         }
 
         Business = {
             "Business": {
-                "MarketPotential": "XXXXXXXX",
-                "Tech innovation": "XXXXXXXx",
-                "Q&A": "XXXXXXXXX?"
+                "Assessment": "XXXXXXXX",
+                "Follow-Up Questions": "XXXXXXXx",
+                "Rating": "1"
             }
         }
 
@@ -112,18 +115,29 @@ def main():
 
         st.header("Report Overview")
         st.subheader("Overview")
-        st.write(Report["Report"]["Overview"])
-        st.subheader("Industry")
-        st.write(Report["Report"]["Industry"])
+        st.write(Overview["Overview"]["Overview"])
+        st.subheader("Relevant Industries")
+        st.write(Overview["Overview"]["Relevant Industries"])
 
         with st.expander("Sustainability"):
-            st.markdown(f"**Rating:** {Sustainability['Sustainability']['Rating']}")
-            st.markdown(f"**Q&A:** {Sustainability['Sustainability']['Q&A']}")
+            st.markdown(f"**Eliminate waste and pollution:** {Sustainability['Sustainability']['Eliminate waste and pollution:']}")
+            st.markdown(f"**Circulate products and materials:** {Sustainability['Sustainability']['Circulate products and materials']}")
+            st.markdown(f"**Regenerate nature:** {Sustainability['Sustainability']['Regenerate natural']}")
+
+            for i, question in enumerate(Sustainability['Sustainability']['Follow-Up Questions']):
+                st.markdown(f"**Follow-Up Question {i+1}:** {question}")
+            
+            rating = Sustainability['Sustainability']['Rating']
+            star_emoji_string = "⭐" * int(rating)
+
+            st.markdown(f"**Rating:** {star_emoji_string}")
 
         with st.expander("Business Insights"):
-            st.markdown(f"**Market Potential:** {Business['Business']['MarketPotential']}")
-            st.markdown(f"**Tech Innovation:** {Business['Business']['Tech innovation']}")
-            st.markdown(f"**Q&A:** {Business['Business']['Q&A']}")
+            st.markdown(f"**Assessment::** {Business['Business']['Assessment']}")
+            st.markdown(f"**Follow-Up Questions:** {Business['Business']['Follow-Up Questions']}")
+            rating = Sustainability['Sustainability']['Rating']
+            star_emoji_string = "⭐" * int(rating)
+            st.markdown(f"**Rating:** {star_emoji_string}")
 
         with st.expander("Impact and Innovation"):
             st.markdown(f"**Impact:** {Impact_Innovation['Impact']}")
