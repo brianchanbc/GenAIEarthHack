@@ -80,17 +80,18 @@ def main():
             Sustainability = json.loads(st.session_state["sus_assistant"])
 
             with st.expander("Sustainability"):
-                st.markdown(f"**Eliminate waste and pollution:** {Sustainability['Eliminate waste and pollution']}")
-                st.markdown(f"**Circulate products and materials:** {Sustainability['Circulate products and materials']}")
-                st.markdown(f"**Regenerate nature:** {Sustainability['Regenerate nature']}")
+                st.markdown(f'<span style="font-size: 20px;"><b>Eliminate waste and pollution:</b></span> {Sustainability["Eliminate waste and pollution"]}', unsafe_allow_html=True)
+                st.markdown(f'<span style="font-size: 20px;"><b>Circulate products and materials:</b></span> {Sustainability["Circulate products and materials"]}', unsafe_allow_html=True)
+                st.markdown(f'<span style="font-size: 20px;"><b>Regenerate nature:</b></span> {Sustainability["Regenerate nature"]}', unsafe_allow_html=True)
+
 
                 for i, question in enumerate(Sustainability['Follow-Up Questions']):
-                    st.markdown(f"**Follow-Up Question {i+1}:** {question}")
+                    st.markdown(f'<span style="font-size: 20px;"><b>Follow-Up Question {i+1}:</b></span> {question}', unsafe_allow_html=True)
             
                 rating = Sustainability['Rating']
                 star_emoji_string = "⭐" * int(rating)
 
-                st.markdown(f"**Rating:** {star_emoji_string}")
+                st.markdown(f'<span style="font-size: 20px;"><b>Rating:</b></span> {star_emoji_string}', unsafe_allow_html=True)
 
             with st.spinner("Processing Input..."):
                 # Handle file uploads
@@ -107,12 +108,13 @@ def main():
             Business = json.loads(st.session_state["bus_assistant"])
 
             with st.expander("Business Assessment"):
-                st.markdown(f"**Assessment::** {Business['Assessment']}")
+                for i, assessment in enumerate(Business['Assessment']):
+                    st.markdown(f'<span style="font-size: 20px;"><b>Assessment {i+1}:</b></span> {assessment}', unsafe_allow_html=True)
                 for i, question in enumerate(Business['Follow-Up Questions']):
-                    st.markdown(f"**Follow-Up Question {i+1}:** {question}")
+                    st.markdown(f'<span style="font-size: 20px;"><b>Follow-Up Question {i+1}:</b></span> {question}', unsafe_allow_html=True)
                 rating = Business['Rating']
                 star_emoji_string = "⭐" * int(rating)
-                st.markdown(f"**Rating:** {star_emoji_string}")
+                st.markdown(f'<span style="font-size: 20px;"><b>Rating:</b></span> {star_emoji_string}', unsafe_allow_html=True)
 
             with st.spinner("Processing Input..."):
                 # Handle file uploads
@@ -129,13 +131,13 @@ def main():
             Impact_Innovation = json.loads(st.session_state["imp_assistant"])
 
             with st.expander("Impact and Innovation"):
-                st.markdown(f"**Impact:** {Impact_Innovation['Impact']}")
-                st.markdown(f"**Innovation:** {Impact_Innovation['Innovation']}")
+                st.markdown(f'<span style="font-size: 20px;"><b>Impact:</b></span> {Impact_Innovation["Impact"]}', unsafe_allow_html=True)
+                st.markdown(f'<span style="font-size: 20px;"><b>Innovation:</b></span> {Impact_Innovation["Innovation"]}', unsafe_allow_html=True)
                 for i, question in enumerate(Impact_Innovation['Follow-Up Questions']):
-                    st.markdown(f"**Follow-Up Question {i+1}:** {question}")
+                    st.markdown(f'<span style="font-size: 20px;"><b>Follow-Up Question {i+1}:</b></span> {question}', unsafe_allow_html=True)
                 rating = Impact_Innovation['Rating']
                 star_emoji_string = "⭐" * int(rating)
-                st.markdown(f"**Rating:** {star_emoji_string}")
+                st.markdown(f'<span style="font-size: 20px;"><b>Rating:</b></span> {star_emoji_string}', unsafe_allow_html=True)
 
 
             Recommendation = {
@@ -147,7 +149,7 @@ def main():
 
             with st.expander("Recommendations"):
                 for key, value in Recommendation.items():
-                    st.markdown(f"- **Recommendation {key}:** {value}")
+                    st.markdown(f'Recommendation {key}: {value}', unsafe_allow_html=True)
 
         # Chat Interaction
     for message in st.session_state.messages:
