@@ -6,6 +6,7 @@ import backend.instructions_and_prompts as ip
 
 # Load OpenAI API key
 
+
 def main():
     # Initialize session state variables if they don't exist
     if "uploaded_button_clicked" not in st.session_state:
@@ -36,9 +37,23 @@ def main():
 
         with st.spinner("Processing Input..."):
             # Handle file uploads
-            create_assistant(uploaded_files, problem_text, solution_text, ip.OVERVIEW_INSTRUCTIONS, ip.OVERVIEW_PROMPT)
-            create_assistant(uploaded_files, problem_text, solution_text, ip.SUSTAINABILITY_INSTRUCTIONS, ip.SUSTAINABILITY_PROMPT)
-
+            create_assistant(
+                uploaded_files,
+                problem_text,
+                solution_text,
+                ip.OVERVIEW_INSTRUCTIONS,
+                ip.OVERVIEW_PROMPT,
+                "general_assistant",
+            )
+            print("yo" + st.session_state["general_assistant"])
+            # # create_assistant(
+            #     uploaded_files,
+            #     problem_text,
+            #     solution_text,
+            #     ip.SUSTAINABILITY_INSTRUCTIONS,
+            #     ip.SUSTAINABILITY_PROMPT,
+            #     "business_assistant",
+            # )
 
     # Display chat history
     for message in st.session_state.messages:

@@ -16,6 +16,7 @@ def create_assistant(
     solution_text,
     instruction,
     prompt,
+    assistant_id
 ):
     start_time = time.time()
     file_ids = []
@@ -71,9 +72,9 @@ def create_assistant(
         thread_id=thread.id
     )
     assistant_response = messages.data[0].content[0].text.value
+    st.session_state[assistant_id] = assistant_response
     
     
-    print(assistant_response)
     print(f"Time eplapsed: {time.time() - start_time}")
     
 
