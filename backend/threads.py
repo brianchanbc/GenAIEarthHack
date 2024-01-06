@@ -2,6 +2,7 @@ from openai import OpenAI
 import dotenv
 import os
 import streamlit as st
+import time
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
@@ -13,8 +14,10 @@ def create_assistant(
     uploaded_files,
     problem_text,
     solution_text,
+    instruction,
     prompt,
 ):
+    start_time = time.time()
     file_ids = []
     uploaded_logs = []
     for uploaded_file in uploaded_files:
@@ -26,21 +29,11 @@ def create_assistant(
         }
         uploaded_logs.append(uploaded_log)
         file_ids.append(oai_uploaded_file.id)
-
-    # Create assistant with context from Problem, Solution, and uploaded files
-    context_log = (
-        f"Problem: {problem_text}\nSolution: {solution_text}"
-        if problem_text or solution_text
-        else ""
-    )
     file_context_log = f"File Context: {str(uploaded_logs)}"
+    
+    # Create assistant with context from Problem, Solution, and uploaded files
     assistant = client.beta.assistants.create(
-        instructions=f"""
-        You are a helpful assistant for answering questions based on Problem, Solution, and uploaded files.
-        {context_log}
-        {file_context_log}
-        Please use this information to understand the context of the user's questions.
-        """,
+        instructions=instruction.format(problem_text=problem_text, solution_text=solution_text, uploaded_logs=file_context_log),
         model="gpt-4-1106-preview",
         tools=[{"type": "retrieval"}],
         file_ids=file_ids,
@@ -78,6 +71,9 @@ def create_assistant(
         thread_id=thread.id
     )
     assistant_response = messages.data[0].content[0].text.value
+    
+    
     print(assistant_response)
+    print(f"Time eplapsed: {time.time() - start_time}")
     
 
