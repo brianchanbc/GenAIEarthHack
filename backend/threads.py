@@ -72,7 +72,7 @@ def create_assistant(
         thread_id=thread.id
     )
     assistant_response = messages.data[0].content[0].text.value
-    st.session_state[assistant_id] = assistant_response
+    st.session_state[assistant_id] = assistant_response.replace("```json","").replace("```","")
     
     
     print(f"Time eplapsed: {time.time() - start_time}")

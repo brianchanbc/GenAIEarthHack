@@ -1,3 +1,4 @@
+import json
 import os
 import dotenv
 import streamlit as st
@@ -52,39 +53,90 @@ def main():
                     ip.OVERVIEW_PROMPT,
                     "general_assistant",
                 )
-                print("yo" + st.session_state["general_assistant"])
 
-        # Rest of your code for JSON Data Definitions, Display, and Chat Interaction goes here
-            Overview = {
-                "Overview": {
-                "Overview": "This section provides a general summary and overall context.",
-                "Relevant Industries": "This is a section for industry"
-                    }
-                }
+            # Display JSON Data
+            st.title("Project Evaluation Report")
+            print(st.session_state["general_assistant"])
 
-            Sustainability = {
-                "Sustainability": {
-                    "Eliminate waste and pollution:": "1",
-                    "Circulate products and materials": "Your question and answer content here",
-                    "Regenerate natural": "Your question and answer content here",
-                    "Follow-Up Questions": ["XXXX", "yyyyy"],
-                    "Rating": "3",
-                }
-            }
+            Overview = json.loads(st.session_state["general_assistant"])
+            st.header("Report Overview")
+            st.subheader("Overview")
+            st.write(Overview["Overview"])
+            st.subheader("Relevant Industries")
+            st.write(Overview["Relevant Industries"])
 
-            Business = {
-                "Business": {
-                    "Assessment": "XXXXXXXX",
-                    "Follow-Up Questions": "XXXXXXXx",
-                    "Rating": "1"
-                }
-            }
+            with st.spinner("Processing Input..."):
+                # Handle file uploads
+                create_assistant(
+                    uploaded_files,
+                    problem_text,
+                    solution_text,
+                    ip.SUSTAINABILITY_INSTRUCTIONS,
+                    ip.SUSTAINABILITY_PROMPT,
+                    "sus_assistant",
+                )
+            # Rest of your code for JSON Data Definitions, Display, and Chat Interaction goes here
+            print(st.session_state["sus_assistant"])
+            Sustainability = json.loads(st.session_state["sus_assistant"])
 
-            Impact_Innovation = {
-                "Impact": "XXXXXXX",
-                "Innovation": "XXXXXXXXX",
-                "Q&A": "XXXXX"
-            }
+            with st.expander("Sustainability"):
+                st.markdown(f"**Eliminate waste and pollution:** {Sustainability['Eliminate waste and pollution']}")
+                st.markdown(f"**Circulate products and materials:** {Sustainability['Circulate products and materials']}")
+                st.markdown(f"**Regenerate nature:** {Sustainability['Regenerate nature']}")
+
+                for i, question in enumerate(Sustainability['Follow-Up Questions']):
+                    st.markdown(f"**Follow-Up Question {i+1}:** {question}")
+            
+                rating = Sustainability['Rating']
+                star_emoji_string = "⭐" * int(rating)
+
+                st.markdown(f"**Rating:** {star_emoji_string}")
+
+            with st.spinner("Processing Input..."):
+                # Handle file uploads
+                create_assistant(
+                    uploaded_files,
+                    problem_text,
+                    solution_text,
+                    ip.BUSINESS_INSTRUCTIONS,
+                    ip.BUSINESS_PROMPT,
+                    "bus_assistant",
+                )
+
+            print(st.session_state["bus_assistant"])
+            Business = json.loads(st.session_state["bus_assistant"])
+
+            with st.expander("Business Assessment"):
+                st.markdown(f"**Assessment::** {Business['Assessment']}")
+                for i, question in enumerate(Business['Follow-Up Questions']):
+                    st.markdown(f"**Follow-Up Question {i+1}:** {question}")
+                rating = Business['Rating']
+                star_emoji_string = "⭐" * int(rating)
+                st.markdown(f"**Rating:** {star_emoji_string}")
+
+            with st.spinner("Processing Input..."):
+                # Handle file uploads
+                create_assistant(
+                    uploaded_files,
+                    problem_text,
+                    solution_text,
+                    ip.IMPACT_INNOVATION_INSTRUCTIONS,
+                    ip.IMPACT_INNOVATION_PROMPT,
+                    "imp_assistant",
+                )
+
+            print(st.session_state["imp_assistant"])
+            Impact_Innovation = json.loads(st.session_state["imp_assistant"])
+
+            with st.expander("Impact and Innovation"):
+                st.markdown(f"**Impact:** {Impact_Innovation['Impact']}")
+                st.markdown(f"**Innovation:** {Impact_Innovation['Innovation']}")
+                for i, question in enumerate(Impact_Innovation['Follow-Up Questions']):
+                    st.markdown(f"**Follow-Up Question {i+1}:** {question}")
+                rating = Impact_Innovation['Rating']
+                star_emoji_string = "⭐" * int(rating)
+                st.markdown(f"**Rating:** {star_emoji_string}")
+
 
             Recommendation = {
                 "1": "xxxxxxx",
@@ -92,39 +144,6 @@ def main():
                 "3": "xxxxxxxx"
             }
 
-            # Display JSON Data
-            st.title("Project Evaluation Report")
-
-            st.header("Report Overview")
-            st.subheader("Overview")
-            st.write(Overview["Overview"]["Overview"])
-            st.subheader("Relevant Industries")
-            st.write(Overview["Overview"]["Relevant Industries"])
-
-            with st.expander("Sustainability"):
-                st.markdown(f"**Eliminate waste and pollution:** {Sustainability['Sustainability']['Eliminate waste and pollution:']}")
-                st.markdown(f"**Circulate products and materials:** {Sustainability['Sustainability']['Circulate products and materials']}")
-                st.markdown(f"**Regenerate nature:** {Sustainability['Sustainability']['Regenerate natural']}")
-
-                for i, question in enumerate(Sustainability['Sustainability']['Follow-Up Questions']):
-                    st.markdown(f"**Follow-Up Question {i+1}:** {question}")
-            
-                rating = Sustainability['Sustainability']['Rating']
-                star_emoji_string = "⭐" * int(rating)
-
-                st.markdown(f"**Rating:** {star_emoji_string}")
-
-            with st.expander("Business Insights"):
-                st.markdown(f"**Assessment::** {Business['Business']['Assessment']}")
-                st.markdown(f"**Follow-Up Questions:** {Business['Business']['Follow-Up Questions']}")
-                rating = Sustainability['Sustainability']['Rating']
-                star_emoji_string = "⭐" * int(rating)
-                st.markdown(f"**Rating:** {star_emoji_string}")
-
-            with st.expander("Impact and Innovation"):
-                st.markdown(f"**Impact:** {Impact_Innovation['Impact']}")
-                st.markdown(f"**Innovation:** {Impact_Innovation['Innovation']}")
-                st.markdown(f"**Q&A:** {Impact_Innovation['Q&A']}")
 
             with st.expander("Recommendations"):
                 for key, value in Recommendation.items():
