@@ -11,6 +11,8 @@ if not OPENAI_API_KEY:
 
 def main():
     # Initialize session state variables if they don't exist
+    if "show_report" not in st.session_state:
+        st.session_state["show_report"] = False
     if 'uploaded_button_clicked' not in st.session_state:
         st.session_state['uploaded_button_clicked'] = False
     if 'messages' not in st.session_state:
@@ -31,11 +33,12 @@ def main():
 
     # File uploader for PDFs
     uploaded_files = st.file_uploader("Upload PDF files here:", type=["pdf"], accept_multiple_files=True)
-
     # Process input
     if st.button('Process Input'):
+        flag = True
         file_ids = []
         uploaded_logs = []
+        st.session_state["show_report"] = True
         st.session_state['uploaded_button_clicked'] = True
         st.session_state['messages'] = []
 
@@ -68,6 +71,70 @@ def main():
             thread = client.beta.threads.create(messages=st.session_state.messages)
             st.session_state['thread'] = thread
 
+        # JSON Data Definitions
+    if st.session_state["show_report"] == True:
+        Report = {
+            "Report": {
+                "Overview": "This section provides a general summary and overall context.",
+                "Industry": "This is a section for industry"
+            }
+        }
+
+        Sustainability = {
+            "Sustainability": {
+                "Rating": "⭐⭐⭐⭐⭐",
+                "Q&A": "Your question and answer content here"
+            }
+        }
+
+        Business = {
+            "Business": {
+                "MarketPotential": "XXXXXXXX",
+                "Tech innovation": "XXXXXXXx",
+                "Q&A": "XXXXXXXXX?"
+            }
+        }
+
+        Impact_Innovation = {
+            "Impact": "XXXXXXX",
+            "Innovation": "XXXXXXXXX",
+            "Q&A": "XXXXX"
+        }
+
+        Recommendation = {
+            "1": "xxxxxxx",
+            "2": "xxxxxxxx",
+            "3": "xxxxxxxx"
+        }
+
+        # Display JSON Data
+        st.title("Project Evaluation Report")
+
+        st.header("Report Overview")
+        st.subheader("Overview")
+        st.write(Report["Report"]["Overview"])
+        st.subheader("Industry")
+        st.write(Report["Report"]["Industry"])
+
+        with st.expander("Sustainability"):
+            st.markdown(f"**Rating:** {Sustainability['Sustainability']['Rating']}")
+            st.markdown(f"**Q&A:** {Sustainability['Sustainability']['Q&A']}")
+
+        with st.expander("Business Insights"):
+            st.markdown(f"**Market Potential:** {Business['Business']['MarketPotential']}")
+            st.markdown(f"**Tech Innovation:** {Business['Business']['Tech innovation']}")
+            st.markdown(f"**Q&A:** {Business['Business']['Q&A']}")
+
+        with st.expander("Impact and Innovation"):
+            st.markdown(f"**Impact:** {Impact_Innovation['Impact']}")
+            st.markdown(f"**Innovation:** {Impact_Innovation['Innovation']}")
+            st.markdown(f"**Q&A:** {Impact_Innovation['Q&A']}")
+
+        with st.expander("Recommendations"):
+            for key, value in Recommendation.items():
+                st.markdown(f"- **Recommendation {key}:** {value}")
+
+    # Chat Interaction
     # Display chat history
     for message in st.session_state.messages:
         if message["role"] == "assistant":
