@@ -1,8 +1,9 @@
 import json
 import os
+from urllib import response
 import dotenv
 import streamlit as st
-from backend.threads import process_uploaded_files, generate_response
+from backend.threads import process_uploaded_files, generate_response, get_assistant
 import backend.instructions_and_prompts as ip
 from backend.utils import extract_json, generate_recommendation_input
 
@@ -16,12 +17,12 @@ def main():
         st.session_state["show_report"] = False
     if "uploaded_button_clicked" not in st.session_state:
         st.session_state["uploaded_button_clicked"] = False
-    # if "messages" not in st.session_state:
-    #     st.session_state["messages"] = []
-    # if "thread" not in st.session_state:
-    #     st.session_state["thread"] = None
-    # if "assistant" not in st.session_state:
-    #     st.session_state["assistant"] = None
+    if "messages" not in st.session_state:
+        st.session_state["messages"] = []
+    if "assistant" not in st.session_state:
+        st.session_state["assistant"] = None
+    if "Report" not in st.session_state:
+        st.session_state["Report"] = {}
 
     # Create layout for Problem and Solution input
     col1, col2 = st.columns(2)
@@ -34,10 +35,11 @@ def main():
     uploaded_files = st.file_uploader(
         "Upload PDF files here:", type=["pdf"], accept_multiple_files=True
     )
+    assistant_files = process_uploaded_files(uploaded_files)
 
     # Process input
     if st.button("Process Input"):
-        if not problem_text and not solution_text and len(uploaded_files) == 0:
+        if not problem_text and not solution_text and len(assistant_files) == 0:
             st.error("Please upload or input contents.")
         else:
             # flag = True
@@ -47,16 +49,18 @@ def main():
             st.session_state["uploaded_button_clicked"] = True
             # st.session_state["messages"] = []
 
-            assistant_files = process_uploaded_files(uploaded_files) 
-            # TODO: Test with uploaded file(s)
-
             with st.spinner("Processing Input..."):
-                general_thread, general_response = generate_response(
+                st.session_state["assistant"] = get_assistant(
                     "General Assistant",
+                    ip.OVERVIEW_INSTRUCTIONS,
                     problem_text,
                     solution_text,
-                    ip.OVERVIEW_INSTRUCTIONS,
-                    ip.OVERVIEW_PROMPT
+                    assistant_files,
+                )
+
+                st.session_state["thread"], general_response = generate_response(
+                    st.session_state["assistant"],
+                    ip.OVERVIEW_PROMPT,
                 )
                 print("General Response:", general_response)
 
@@ -64,199 +68,203 @@ def main():
             st.title("Project Evaluation Report")
             # print(st.session_state["general_assistant"])
             Overview = json.loads(extract_json(general_response))
+            st.session_state["Report"]["Overview"] = Overview
             st.header("Report Overview")
             st.subheader("Overview")
             st.write(Overview["Overview"])
             st.subheader("Relevant Industries")
             st.write(Overview["Relevant Industries"])
 
-            with st.spinner("Processing Input..."):
-                sus_thread, sus_response = generate_response(
-                    "Sustainability Assistant",
-                    problem_text,
-                    solution_text,
-                    ip.SUSTAINABILITY_INSTRUCTIONS,
-                    ip.SUSTAINABILITY_PROMPT
-                )
-                print("Sustainability Response:", sus_response)
+            # with st.spinner("Processing Input..."):
+            #     sus_assistant = get_assistant(
+            #         "Sustainability Assistant",
+            #         ip.SUSTAINABILITY_INSTRUCTIONS,
+            #         problem_text,
+            #         solution_text,
+            #         assistant_files,
+            #     )
 
-            Sustainability = json.loads(extract_json(sus_response))
-            with st.expander("Sustainability", expanded=True):
-                st.markdown(
-                    f"**Eliminate waste and pollution:** {Sustainability['Eliminate waste and pollution']}"
-                )
-                st.markdown(
-                    f"**Circulate products and materials:** {Sustainability['Circulate products and materials']}"
-                )
-                st.markdown(
-                    f"**Regenerate nature:** {Sustainability['Regenerate nature']}"
-                )
-                st.write("**Follow-Up Questions**")
-                for i, question in enumerate(Sustainability["Follow-Up Questions"]):
-                    st.markdown(f"- {question}")
-                st.markdown(
-                    """
-                <style>
-                [dara-testid="stMarkdownContainer"] ul{
-                            padding-left:40px;
-                }
-                </style>                        
-                """,
-                    unsafe_allow_html=True,
-                )
+            #     sus_thread, sus_response = generate_response(
+            #         sus_assistant,
+            #         ip.SUSTAINABILITY_PROMPT,
+            #     )
+            #     print("Sustainability Response:", sus_response)
 
-                rating = Sustainability["Rating"]
-                star_emoji_string = "⭐" * int(rating)
+            # Sustainability = json.loads(extract_json(sus_response))
+            # with st.expander("Sustainability", expanded=True):
+            #     st.markdown(
+            #         f"**Eliminate waste and pollution:** {Sustainability['Eliminate waste and pollution']}"
+            #     )
+            #     st.markdown(
+            #         f"**Circulate products and materials:** {Sustainability['Circulate products and materials']}"
+            #     )
+            #     st.markdown(
+            #         f"**Regenerate nature:** {Sustainability['Regenerate nature']}"
+            #     )
+            #     st.write("**Follow-Up Questions**")
+            #     for i, question in enumerate(Sustainability["Follow-Up Questions"]):
+            #         st.markdown(f"- {question}")
+            #     st.markdown(
+            #         """
+            #     <style>
+            #     [dara-testid="stMarkdownContainer"] ul{
+            #                 padding-left:40px;
+            #     }
+            #     </style>
+            #     """,
+            #         unsafe_allow_html=True,
+            #     )
 
-                st.markdown(f"**Rating:** {star_emoji_string}")
+            #     rating = Sustainability["Rating"]
+            #     star_emoji_string = "⭐" * int(rating)
 
-            with st.spinner("Generating Business Assessment Report..."):
-                bus_thread, bus_response = generate_response(
-                    "Business Assistant",
-                    problem_text,
-                    solution_text,
-                    ip.BUSINESS_INSTRUCTIONS,
-                    ip.BUSINESS_PROMPT
-                )
-                print("Business Response:", bus_response)
-            
-            Business = json.loads(extract_json(bus_response))
+            #     st.markdown(f"**Rating:** {star_emoji_string}")
 
-            with st.expander("Business Assessment", expanded=True):
-                st.write("Assessments")
-                for i, assessment in enumerate(Business["Assessment"]):
-                    st.markdown(f"- {assessment}")
+            # with st.spinner("Generating Business Assessment Report..."):
+            #     bus_assistant = get_assistant(
+            #         "Business Assistant",
+            #         ip.BUSINESS_INSTRUCTIONS,
+            #         problem_text,
+            #         solution_text,
+            #         assistant_files,
+            #     )
+            #     bus_thread, bus_response = generate_response(
+            #         bus_assistant,
+            #         ip.BUSINESS_PROMPT,
+            #     )
+            #     print("Business Response:", bus_response)
 
-                st.markdown(
-                    """
-                <style>
-                [dara-testid="stMarkdownContainer"] ul{
-                            padding-left:40px;
-                }
-                </style>
-                """,
-                    unsafe_allow_html=True,
-                )
+            # Business = json.loads(extract_json(bus_response))
 
-                st.write("**Follow-Up Questions**")
-                for i, question in enumerate(Business["Follow-Up Questions"]):
-                    st.markdown(f"- {question}")
-                st.markdown(
-                    """
-                <style>
-                [dara-testid="stMarkdownContainer"] ul{
-                            padding-left:40px;
-                }
-                </style>
-                """,
-                    unsafe_allow_html=True,
-                )
-                rating = Business["Rating"]
-                star_emoji_string = "⭐" * int(rating)
-                st.markdown(f"**Rating:** {star_emoji_string}")
+            # with st.expander("Business Assessment", expanded=True):
+            #     st.write("Assessments")
+            #     for i, assessment in enumerate(Business["Assessment"]):
+            #         st.markdown(f"- {assessment}")
 
-            with st.spinner("Generating Impact and Innovation Report..."):
-                imp_thread, imp_response = generate_response(
-                    "Impact & Innovation Assistant",
-                    problem_text,
-                    solution_text,
-                    ip.IMPACT_INNOVATION_INSTRUCTIONS,
-                    ip.IMPACT_INNOVATION_PROMPT
-                )
-                print("Impact & Innovation Response:", imp_response)
-            
-            Impact_Innovation = json.loads(extract_json(imp_response))
+            #     st.markdown(
+            #         """
+            #     <style>
+            #     [dara-testid="stMarkdownContainer"] ul{
+            #                 padding-left:40px;
+            #     }
+            #     </style>
+            #     """,
+            #         unsafe_allow_html=True,
+            #     )
 
-            with st.expander("Impact and Innovation", expanded=True):
-                st.markdown(f"**Impact:** {Impact_Innovation['Impact']}")
-                st.markdown(f"**Innovation:** {Impact_Innovation['Innovation']}")
-                st.write("**Follow-Up Questions**")
-                for i, question in enumerate(Impact_Innovation["Follow-Up Questions"]):
-                    st.markdown(f"- {question}")
-                st.markdown(
-                    """
-                <style>
-                [dara-testid="stMarkdownContainer"] ul{
-                            padding-left:40px;
-                }
-                </style>                        
-                """,
-                    unsafe_allow_html=True,
-                )
-                rating = Impact_Innovation["Rating"]
-                star_emoji_string = "⭐" * int(rating)
-                st.markdown(f"**Rating:** {star_emoji_string}")
+            #     st.write("**Follow-Up Questions**")
+            #     for i, question in enumerate(Business["Follow-Up Questions"]):
+            #         st.markdown(f"- {question}")
+            #     st.markdown(
+            #         """
+            #     <style>
+            #     [dara-testid="stMarkdownContainer"] ul{
+            #                 padding-left:40px;
+            #     }
+            #     </style>
+            #     """,
+            #         unsafe_allow_html=True,
+            #     )
+            #     rating = Business["Rating"]
+            #     star_emoji_string = "⭐" * int(rating)
+            #     st.markdown(f"**Rating:** {star_emoji_string}")
 
-            
-            rec_input = generate_recommendation_input(Sustainability, Business, Impact_Innovation)
+            # with st.spinner("Generating Impact and Innovation Report..."):
+            #     imp_assistant = get_assistant(
+            #         "Impact & Innovation Assistant",
+            #         ip.IMPACT_INNOVATION_INSTRUCTIONS,
+            #         problem_text,
+            #         solution_text,
+            #         assistant_files,
+            #     )
+            #     imp_thread, imp_response = generate_response(
+            #         imp_assistant,
+            #         ip.IMPACT_INNOVATION_PROMPT,
+            #     )
+            #     print("Impact & Innovation Response:", imp_response)
 
-            with st.spinner("Processing Input..."):
-                rec_thread, rec_response = generate_response(
-                    "General Assistant",
-                    problem_text,
-                    solution_text,
-                    ip.OVERVIEW_INSTRUCTIONS,
-                    ip.RECOMMENDATION_PROMPT.format(generated_assessments=rec_input),
-                    general_thread
-                )
-                print("Recommendation Response:", rec_response)
-            
-    
-            Recommendation = json.loads(extract_json(rec_response))
-            st.write("**Recommendations**")
-            for recommendation in Recommendation["Recommendations"]:
-                st.markdown(f"- {recommendation}")
-            st.markdown(
-                """
-                <style>
-                [dara-testid="stMarkdownContainer"] ul{
-                            padding-left:40px;
-                }
-                </style>                        
-                """,
-                unsafe_allow_html=True,
-            )
+            # Impact_Innovation = json.loads(extract_json(imp_response))
 
+            # with st.expander("Impact and Innovation", expanded=True):
+            #     st.markdown(f"**Impact:** {Impact_Innovation['Impact']}")
+            #     st.markdown(f"**Innovation:** {Impact_Innovation['Innovation']}")
+            #     st.write("**Follow-Up Questions**")
+            #     for i, question in enumerate(Impact_Innovation["Follow-Up Questions"]):
+            #         st.markdown(f"- {question}")
+            #     st.markdown(
+            #         """
+            #     <style>
+            #     [dara-testid="stMarkdownContainer"] ul{
+            #                 padding-left:40px;
+            #     }
+            #     </style>
+            #     """,
+            #         unsafe_allow_html=True,
+            #     )
+            #     rating = Impact_Innovation["Rating"]
+            #     star_emoji_string = "⭐" * int(rating)
+            #     st.markdown(f"**Rating:** {star_emoji_string}")
 
-    #     # Chat Interaction
-    # for message in st.session_state.messages:
-    #     if message["role"] == "assistant":
-    #         st.chat_message("assistant").write(message["content"])
-    #     else:
-    #         st.chat_message("user").write(message["content"])
+            # rec_input = generate_recommendation_input(
+            #     Sustainability, Business, Impact_Innovation
+            # )
 
-    # if st.session_state["assistant"]:
-    #     if prompt := st.chat_input("Enter your message here"):
-    #         user_message = {"role": "user", "content": prompt}
-    #         st.session_state.messages.append(user_message)
+            # rec_input = generate_recommendation_input(
+            #     Sustainability, Business, "It is very innovative"
+            # )
 
-    #         st.chat_message("user").write(prompt)
+            # with st.spinner("Processing Input..."):
+            #     rec_thread, rec_response = generate_response(
+            #         general_assistant,
+            #         ip.RECOMMENDATION_PROMPT.format(generated_assessments=rec_input),
+            #         general_thread,
+            #     )
+            #     print("Recommendation Response:", rec_response)
 
-    #         message = client.beta.threads.messages.create(
-    #             thread_id=st.session_state["thread"].id, role="user", content=prompt
-    #         )
+            # Recommendation = json.loads(extract_json(rec_response))
+            # st.write("**Recommendations**")
+            # for recommendation in Recommendation["Recommendations"]:
+            #     st.markdown(f"- {recommendation}")
+            # st.markdown(
+            #     """
+            #     <style>
+            #     [dara-testid="stMarkdownContainer"] ul{
+            #                 padding-left:40px;
+            #     }
+            #     </style>
+            #     """,
+            #     unsafe_allow_html=True,
+            # )
 
-    #         with st.chat_message("assistant"):
-    #             with st.spinner("Waiting for the assistant's response..."):
-    #                 run = client.beta.threads.runs.create(
-    #                     thread_id=st.session_state["thread"].id,
-    #                     assistant_id=st.session_state["assistant"].id,
-    #                 )
+    print(st.session_state["Report"]["Overview"])
 
-    #                 while run.status != "completed":
-    #                     run = client.beta.threads.runs.retrieve(
-    #                         thread_id=st.session_state["thread"].id, run_id=run.id
-    #                     )
+    for message in st.session_state.messages:
+        if message["role"] == "assistant":
+            st.chat_message("assistant").write(message["content"])
+        else:
+            st.chat_message("user").write(message["content"])
 
-    #                 messages = client.beta.threads.messages.list(
-    #                     thread_id=st.session_state["thread"].id
-    #                 )
-    #                 assistant_response = messages.data[0].content[0].text.value
+    if st.session_state["assistant"]:
+        if prompt := st.chat_input("Enter your message here"):
+            user_message = {"role": "user", "content": prompt}
+            st.session_state.messages.append(user_message)
 
-    #                 st.session_state.messages.append(
-    #                     {"role": "assistant", "content": assistant_response}
-    #                 )
-    #                 st.write(assistant_response.replace("$", "\$"))
+            st.chat_message("user").write(prompt)
+
+            with st.chat_message("assistant"):
+                with st.spinner("Waiting for the assistant's response..."):
+                    _, assistant_response = generate_response(
+                        st.session_state["assistant"],
+                        prompt,
+                        st.session_state["thread"],
+                    )
+
+                    st.session_state.messages.append(
+                        {"role": "assistant", "content": assistant_response}
+                    )
+                    st.write(assistant_response.replace("$", "\$"))
+    if st.session_state.get("show_report", False):
+        st.write("yo")
 
 
 if __name__ == "__main__":

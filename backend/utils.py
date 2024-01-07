@@ -38,6 +38,8 @@ def generate_recommendation_input(sus_assessment, bus_assessment, imp_assessment
         {imp_assessment['Innovation']}
     """
 
+    imp_text = f"{imp_assessment}"
+
     generated_assessments = f"""
         Sustainability Assessment:
         {sus_text}
