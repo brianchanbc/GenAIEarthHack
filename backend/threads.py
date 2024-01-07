@@ -5,85 +5,117 @@ import streamlit as st
 import time
 from .utils import extract_json
 
+dotenv.load_dotenv(".env")
+
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-if not OPENAI_API_KEY:
-    dotenv.load_dotenv(".env")
-    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL")
+
 client = OpenAI()
 
+def create_assistant_file(uploaded_file, a):
+    assistant_file = client.files.create(
+        file=uploaded_file,
+        prupose="assistants"
+        )
+    return assistant_file
+
 def create_assistant(
-    uploaded_files,
-    problem_text,
-    solution_text,
-    instruction,
-    prompt,
-    assistant_id
+        name,
+        instructions,
+        problem,
+        solution, 
+        model=OPENAI_MODEL, 
+        assistant_files=[]
 ):
-    start_time = time.time()
-    file_ids = []
-    uploaded_logs = []
-    for uploaded_file in uploaded_files:
-        file_content = uploaded_file.read()
-        oai_uploaded_file = client.files.create(file=file_content, purpose="assistants")
-        uploaded_log = {
-            "file_name": uploaded_file.name,
-            "file_id": oai_uploaded_file.id,
-        }
-        uploaded_logs.append(uploaded_log)
-        file_ids.append(oai_uploaded_file.id)
-    file_context_log = f"File Context: {str(uploaded_logs)}"
+    if len(assistant_files) != 0:
+        assistant = client.beta.assistants.create(
+            instructions=instructions.format(problem_text=problem, solution_text=solution),
+            name=name,
+            tools=[{"type": "retrieval"}],
+            model=model,
+            file_ids=[file.id for file in assistant_files]
+        )
+    else:
+        assistant = client.beta.assistants.create(
+            instructions=instructions.format(problem_text=problem, solution_text=solution),
+            name=name,
+            model=model
+        )
+    return assistant
+
+def get_assistant_id(assistant_name):
+    all_assistants = client.beta.assistants.list(limit="10")
+    for assistant in all_assistants.data:
+        if assistant.name == assistant_name:
+            return assistant.id
+    return None
     
-    # Create assistant with context from Problem, Solution, and uploaded files
-    assistant = client.beta.assistants.create(
-        instructions=instruction.format(problem_text=problem_text, solution_text=solution_text, uploaded_logs=file_context_log),
-        model="gpt-4-1106-preview",
-        tools=[{"type": "retrieval"}],
-        file_ids=file_ids,
-    )
+def retrieve_assistant(assistant_id):
+    assistant = client.beta.assistants.retrieve(assistant_id)
+    return assistant
 
-    # Create a new thread
+def create_thread():
     thread = client.beta.threads.create()
-    if assistant_id == "general_assistant":
-        st.session_state["assistant"] = assistant
-        # Create a new thread
-        st.session_state["thread"] = thread
+    return thread
 
-    # Add a Message to a Thread
+def create_message(message, thread):
     message = client.beta.threads.messages.create(
         thread_id=thread.id,
         role="user",
-        content=prompt,
+        content=message,
     )
-    # print(message)
+    return message
 
-    # Run the assistant
+def retrieve_latest_message_content(thread):
+    message = client.beta.threads.messages.list(
+        thread_id=thread.id,
+        limit=1
+    )
+    message_content = message.data[0].content[0].text.value
+    return message_content
+
+def create_run(thread, assistant_id):
     run = client.beta.threads.runs.create(
         thread_id=thread.id,
-        assistant_id=assistant.id,
+        assistant_id=assistant_id,
     )
-    
-    while run.status != "completed":
-    # Check the run status
-        run = client.beta.threads.runs.retrieve(
-            thread_id=thread.id,
-            run_id=run.id
-        )
-    
-    # Display the assistant's response
-    messages = client.beta.threads.messages.list(
-        thread_id=thread.id
-    )
-    assistant_response = messages.data[0].content[0].text.value
-    
-    if assistant_id == "general_assistant":
-        st.session_state[assistant_id] = assistant_response.replace(
-            "```json", ""
-        ).replace("```", "")
-    else:
-        st.session_state[assistant_id] = extract_json(
-            assistant_response.replace("```json", "").replace("```", "")
-        )
-    
-    print(f"Time eplapsed: {time.time() - start_time}")
-    
+    return run
 
+def retrieve_run(thread, run):
+    run = client.beta.threads.runs.retrieve(
+        thread_id=thread.id,
+        run_id=run.id
+    )
+    return run
+
+def process_uploaded_files(uploaded_files):
+    assistant_files = [create_assistant_file(file) for file in uploaded_files]
+    return assistant_files
+
+def generate_response(
+        assistant_name, 
+        problem, 
+        solution, 
+        instructions, 
+        message,
+        thread=None
+    ):
+    
+    assistant_id = get_assistant_id(assistant_name)
+    
+    if not assistant_id:
+        assistant = create_assistant(assistant_name, instructions, problem, solution)
+        assistant_id = assistant.id
+
+    if not thread:
+        thread = create_thread()
+    
+    message = create_message(message, thread)
+    run = create_run(thread, assistant_id)
+
+    while run.status != "completed":
+        run = retrieve_run(thread, run)
+    
+    response = retrieve_latest_message_content(thread)
+
+    return thread, response

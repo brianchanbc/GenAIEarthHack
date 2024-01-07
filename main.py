@@ -2,8 +2,9 @@ import json
 import os
 import dotenv
 import streamlit as st
-from backend.threads import client, create_assistant
+from backend.threads import process_uploaded_files, generate_response
 import backend.instructions_and_prompts as ip
+from backend.utils import extract_json, generate_recommendation_input
 
 # Load OpenAI API key
 dotenv.load_dotenv(".env")
@@ -15,12 +16,12 @@ def main():
         st.session_state["show_report"] = False
     if "uploaded_button_clicked" not in st.session_state:
         st.session_state["uploaded_button_clicked"] = False
-    if "messages" not in st.session_state:
-        st.session_state["messages"] = []
-    if "thread" not in st.session_state:
-        st.session_state["thread"] = None
-    if "assistant" not in st.session_state:
-        st.session_state["assistant"] = None
+    # if "messages" not in st.session_state:
+    #     st.session_state["messages"] = []
+    # if "thread" not in st.session_state:
+    #     st.session_state["thread"] = None
+    # if "assistant" not in st.session_state:
+    #     st.session_state["assistant"] = None
 
     # Create layout for Problem and Solution input
     col1, col2 = st.columns(2)
@@ -39,29 +40,30 @@ def main():
         if not problem_text and not solution_text and len(uploaded_files) == 0:
             st.error("Please upload or input contents.")
         else:
-            flag = True
-            file_ids = []
-            uploaded_logs = []
+            # flag = True
+            # file_ids = []
+            # uploaded_logs = []
             st.session_state["show_report"] = True
             st.session_state["uploaded_button_clicked"] = True
-            st.session_state["messages"] = []
+            # st.session_state["messages"] = []
+
+            assistant_files = process_uploaded_files(uploaded_files) 
+            # TODO: Test with uploaded file(s)
 
             with st.spinner("Processing Input..."):
-                # Handle file uploads
-                create_assistant(
-                    uploaded_files,
+                general_thread, general_response = generate_response(
+                    "General Assistant",
                     problem_text,
                     solution_text,
                     ip.OVERVIEW_INSTRUCTIONS,
-                    ip.OVERVIEW_PROMPT,
-                    "general_assistant",
+                    ip.OVERVIEW_PROMPT
                 )
+                print("General Response:", general_response)
 
             # Display JSON Data
             st.title("Project Evaluation Report")
-            print(st.session_state["general_assistant"])
-
-            Overview = json.loads(st.session_state["general_assistant"])
+            # print(st.session_state["general_assistant"])
+            Overview = json.loads(extract_json(general_response))
             st.header("Report Overview")
             st.subheader("Overview")
             st.write(Overview["Overview"])
@@ -69,19 +71,16 @@ def main():
             st.write(Overview["Relevant Industries"])
 
             with st.spinner("Processing Input..."):
-                # Handle file uploads
-                create_assistant(
-                    uploaded_files,
+                sus_thread, sus_response = generate_response(
+                    "Sustainability Assistant",
                     problem_text,
                     solution_text,
                     ip.SUSTAINABILITY_INSTRUCTIONS,
-                    ip.SUSTAINABILITY_PROMPT,
-                    "sus_assistant",
+                    ip.SUSTAINABILITY_PROMPT
                 )
-            # Rest of your code for JSON Data Definitions, Display, and Chat Interaction goes here
-            print(st.session_state["sus_assistant"])
-            Sustainability = json.loads(st.session_state["sus_assistant"])
+                print("Sustainability Response:", sus_response)
 
+            Sustainability = json.loads(extract_json(sus_response))
             with st.expander("Sustainability", expanded=True):
                 st.markdown(
                     f"**Eliminate waste and pollution:** {Sustainability['Eliminate waste and pollution']}"
@@ -112,18 +111,16 @@ def main():
                 st.markdown(f"**Rating:** {star_emoji_string}")
 
             with st.spinner("Generating Business Assessment Report..."):
-                # Handle file uploads
-                create_assistant(
-                    uploaded_files,
+                bus_thread, bus_response = generate_response(
+                    "Business Assistant",
                     problem_text,
                     solution_text,
                     ip.BUSINESS_INSTRUCTIONS,
-                    ip.BUSINESS_PROMPT,
-                    "bus_assistant",
+                    ip.BUSINESS_PROMPT
                 )
-
-            print(st.session_state["bus_assistant"])
-            Business = json.loads(st.session_state["bus_assistant"])
+                print("Business Response:", bus_response)
+            
+            Business = json.loads(extract_json(bus_response))
 
             with st.expander("Business Assessment", expanded=True):
                 st.write("Assessments")
@@ -159,18 +156,16 @@ def main():
                 st.markdown(f"**Rating:** {star_emoji_string}")
 
             with st.spinner("Generating Impact and Innovation Report..."):
-                # Handle file uploads
-                create_assistant(
-                    uploaded_files,
+                imp_thread, imp_response = generate_response(
+                    "Impact & Innovation Assistant",
                     problem_text,
                     solution_text,
                     ip.IMPACT_INNOVATION_INSTRUCTIONS,
-                    ip.IMPACT_INNOVATION_PROMPT,
-                    "imp_assistant",
+                    ip.IMPACT_INNOVATION_PROMPT
                 )
-
-            print(st.session_state["imp_assistant"])
-            Impact_Innovation = json.loads(st.session_state["imp_assistant"])
+                print("Impact & Innovation Response:", imp_response)
+            
+            Impact_Innovation = json.loads(extract_json(imp_response))
 
             with st.expander("Impact and Innovation", expanded=True):
                 st.markdown(f"**Impact:** {Impact_Innovation['Impact']}")
@@ -192,67 +187,23 @@ def main():
                 star_emoji_string = "⭐" * int(rating)
                 st.markdown(f"**Rating:** {star_emoji_string}")
 
-            sus_text = f"""
-                {Sustainability['Eliminate waste and pollution']}
-                {Sustainability['Circulate products and materials']}
-                {Sustainability['Regenerate nature']}
-            """
-
-            bus_text = f"""
             
-            """
-
-            imp_text = f"""
-                {Impact_Innovation['Impact']}
-                {Impact_Innovation['Innovation']}
-            """
+            rec_input = generate_recommendation_input(Sustainability, Business, Impact_Innovation)
 
             with st.spinner("Processing Input..."):
-                create_assistant(
-                    uploaded_files,
+                rec_thread, rec_response = generate_response(
+                    "General Assistant",
                     problem_text,
                     solution_text,
                     ip.OVERVIEW_INSTRUCTIONS,
-                    ip.RECOMMENDATION_PROMPT.format(
-                        sustainability_text=sus_text,
-                        business_text=bus_text,
-                        impact_innovation_text=imp_text,
-                    ),
-                    "rec_assistant",
+                    ip.RECOMMENDATION_PROMPT.format(generated_assessments=rec_input),
+                    general_thread
                 )
-            print(st.session_state["rec_assistant"])
-            print(type(st.session_state["rec_assistant"]))
-            #     client.beta.threads.messages.create(
-            #             thread_id=st.session_state["thread"].id,
-            #             role="user",
-            #             content=ip.RECOMMENDATION_PROMPT.format(
-            #                 sustainability_text=sus_text,
-            #                 business_text=bus_text,
-            #                 impact_innovation_text=imp_text),
-            #         )
-
-            #     # Run the assistant
-            #     run = client.beta.threads.runs.create(
-            #         thread_id=st.session_state["thread"].id,
-            #         assistant_id=st.session_state["assistant"].id,
-            #     )
-
-            #     while run.status != "completed":
-            #     # Check the run status
-            #         run = client.beta.threads.runs.retrieve(
-            #             thread_id=st.session_state["thread"].id,
-            #             run_id=run.id
-            #         )
-
-            #     # Display the assistant's response
-            #     messages = client.beta.threads.messages.list(
-            #         thread_id=st.session_state["thread"].id
-            #     )
-            #     assistant_response = messages.data[0].content[0].text.value
-            #     st.session_state["general_assistant"] = assistant_response.replace("```json","").replace("```","")
-            # print(st.session_state["general_assistant"])
-            Recommendation = json.loads(st.session_state["rec_assistant"])
-            st.write("**Follow-Up Questions**")
+                print("Recommendation Response:", rec_response)
+            
+    
+            Recommendation = json.loads(extract_json(rec_response))
+            st.write("**Recommendations**")
             for recommendation in Recommendation["Recommendations"]:
                 st.markdown(f"- {recommendation}")
             st.markdown(
@@ -266,51 +217,46 @@ def main():
                 unsafe_allow_html=True,
             )
 
-            # Recommendation = {"1": "xxxxxxx", "2": "xxxxxxxx", "3": "xxxxxxxx"}
 
-            with st.expander("Recommendations", expanded=True):
-                for key, value in Recommendation.items():
-                    st.markdown(f"- **Recommendation {key}:** {value}")
+    #     # Chat Interaction
+    # for message in st.session_state.messages:
+    #     if message["role"] == "assistant":
+    #         st.chat_message("assistant").write(message["content"])
+    #     else:
+    #         st.chat_message("user").write(message["content"])
 
-        # Chat Interaction
-    for message in st.session_state.messages:
-        if message["role"] == "assistant":
-            st.chat_message("assistant").write(message["content"])
-        else:
-            st.chat_message("user").write(message["content"])
+    # if st.session_state["assistant"]:
+    #     if prompt := st.chat_input("Enter your message here"):
+    #         user_message = {"role": "user", "content": prompt}
+    #         st.session_state.messages.append(user_message)
 
-    if st.session_state["assistant"]:
-        if prompt := st.chat_input("Enter your message here"):
-            user_message = {"role": "user", "content": prompt}
-            st.session_state.messages.append(user_message)
+    #         st.chat_message("user").write(prompt)
 
-            st.chat_message("user").write(prompt)
+    #         message = client.beta.threads.messages.create(
+    #             thread_id=st.session_state["thread"].id, role="user", content=prompt
+    #         )
 
-            message = client.beta.threads.messages.create(
-                thread_id=st.session_state["thread"].id, role="user", content=prompt
-            )
+    #         with st.chat_message("assistant"):
+    #             with st.spinner("Waiting for the assistant's response..."):
+    #                 run = client.beta.threads.runs.create(
+    #                     thread_id=st.session_state["thread"].id,
+    #                     assistant_id=st.session_state["assistant"].id,
+    #                 )
 
-            with st.chat_message("assistant"):
-                with st.spinner("Waiting for the assistant's response..."):
-                    run = client.beta.threads.runs.create(
-                        thread_id=st.session_state["thread"].id,
-                        assistant_id=st.session_state["assistant"].id,
-                    )
+    #                 while run.status != "completed":
+    #                     run = client.beta.threads.runs.retrieve(
+    #                         thread_id=st.session_state["thread"].id, run_id=run.id
+    #                     )
 
-                    while run.status != "completed":
-                        run = client.beta.threads.runs.retrieve(
-                            thread_id=st.session_state["thread"].id, run_id=run.id
-                        )
+    #                 messages = client.beta.threads.messages.list(
+    #                     thread_id=st.session_state["thread"].id
+    #                 )
+    #                 assistant_response = messages.data[0].content[0].text.value
 
-                    messages = client.beta.threads.messages.list(
-                        thread_id=st.session_state["thread"].id
-                    )
-                    assistant_response = messages.data[0].content[0].text.value
-
-                    st.session_state.messages.append(
-                        {"role": "assistant", "content": assistant_response}
-                    )
-                    st.write(assistant_response.replace("$", "\$"))
+    #                 st.session_state.messages.append(
+    #                     {"role": "assistant", "content": assistant_response}
+    #                 )
+    #                 st.write(assistant_response.replace("$", "\$"))
 
 
 if __name__ == "__main__":

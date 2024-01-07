@@ -10,11 +10,7 @@ PROBLEM:
 SOLUTION:
 {solution_text}
 
-FILE CONTEXT:
-{uploaded_logs}
-
-You MUST and can ONLY use the information provided in the user's PROBLEM, SOLUTION and
-FILE CONTEXT to answer any of the user's questions.
+You MUST and can ONLY use the information provided in the user's PROBLEM and SOLUTION to answer any of the user's questions.
 """
 
 OVERVIEW_PROMPT = """
@@ -42,11 +38,7 @@ PROBLEM:
 SOLUTION:
 {solution_text}
 
-FILE CONTEXT:
-{uploaded_logs}
-
-You MUST base your evaluation SOLELY on the information provided in the user's PROBLEM, SOLUTION
-and FILE CONTEXT.
+You MUST base your evaluation SOLELY on the information provided in the user's PROBLEM and SOLUTION.
 """
 
 SUSTAINABILITY_PROMPT = """
@@ -80,10 +72,7 @@ PROBLEM:
 SOLUTION:
 {solution_text}
 
-FILE CONTEXT:
-{uploaded_logs}
-
-You MUST base your evaluation SOLELY on the information provided in the user's PROBLEM, SOLUTION and FILE CONTEXT.
+You MUST base your evaluation SOLELY on the information provided in the user's PROBLEM and SOLUTION.
 """
 
 BUSINESS_PROMPT = """
@@ -119,10 +108,7 @@ PROBLEM:
 SOLUTION:
 {solution_text}
 
-FILE CONTEXT:
-{uploaded_logs}
-
-You MUST base your evaluation SOLELY on the information provided in the user's PROBLEM, SOLUTION and FILE CONTEXT.
+You MUST base your evaluation SOLELY on the information provided in the user's PROBLEM and SOLUTION.
 """
 
 IMPACT_INNOVATION_PROMPT = """
@@ -151,16 +137,9 @@ You MUST format your response as a JSON object, using the following format:
 """
 
 RECOMMENDATION_PROMPT = """
-In addition to the PROBLEM, SOLUTION and FILE CONTEXT, you are provided with the following evaluation about the user's SOLUTION with regard to the following criteria:
+In addition to the PROBLEM and SOLUTION, you are provided with the following evaluation about the user's SOLUTION with regard to the following criteria:
 
-Sustainability: 
-{sustainability_text}
-
-Business Viability: 
-{business_text}
-
-Impact and Innovation: 
-{impact_innovation_text}
+{generated_assessments}
 
 Based on this information, provide recommendations to a potential investor regarding the potential and risks of the user's SOLUTION, and whether it is a worthwhile investment.
 - Provide no more than 3 bullet points 

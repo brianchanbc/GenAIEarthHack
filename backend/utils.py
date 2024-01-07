@@ -23,3 +23,29 @@ def extract_json(text) -> str:
             return f"Error parsing JSON: {e}"
     else:
         return "No JSON found"
+
+def generate_recommendation_input(sus_assessment, bus_assessment, imp_assessment):
+    sus_text = f"""
+        {sus_assessment['Eliminate waste and pollution']}
+        {sus_assessment['Circulate products and materials']}
+        {sus_assessment['Regenerate nature']}
+    """
+
+    bus_text = f"{bus_assessment['Assessment']}"
+
+    imp_text = f"""
+        {imp_assessment['Impact']}
+        {imp_assessment['Innovation']}
+    """
+
+    generated_assessments = f"""
+        Sustainability Assessment:
+        {sus_text}
+
+        Business Assessment:
+        {bus_text}
+
+        Impact Assessment:
+        {imp_text}   
+    """
+    return generated_assessments
