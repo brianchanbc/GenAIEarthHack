@@ -237,36 +237,36 @@ def main():
                 star_emoji_string = "⭐" * int(rating)
                 st.markdown(f"**Rating:** {star_emoji_string}")
 
-            rec_input = generate_recommendation_input(
-                Sustainability, Business, Impact_Innovation
-            )
+            # rec_input = generate_recommendation_input(
+            #     Sustainability, Business, Impact_Innovation
+            # )
 
-            rec_input = generate_recommendation_input(
-                Sustainability, Business, "It is very innovative"
-            )
+            # rec_input = generate_recommendation_input(
+            #     Sustainability, Business, "It is very innovative"
+            # )
 
-            with st.spinner("Processing Input..."):
-                rec_thread, rec_response = generate_response(
-                    st.session_state["assistant"],
-                    ip.RECOMMENDATION_PROMPT.format(generated_assessments=rec_input),
-                    st.session_state["thread"],
-                )
-                print("Recommendation Response:", rec_response)
+            # with st.spinner("Processing Input..."):
+            #     rec_thread, rec_response = generate_response(
+            #         st.session_state["assistant"],
+            #         ip.RECOMMENDATION_PROMPT.format(generated_assessments=rec_input),
+            #         st.session_state["thread"],
+            #     )
+            #     print("Recommendation Response:", rec_response)
 
-            Recommendation = json.loads(extract_json(rec_response))
-            st.write("**Recommendations**")
-            for recommendation in Recommendation["Recommendations"]:
-                st.markdown(f"- {recommendation}")
-            st.markdown(
-                """
-                <style>
-                [dara-testid="stMarkdownContainer"] ul{
-                            padding-left:40px;
-                }
-                </style>
-                """,
-                unsafe_allow_html=True,
-            )
+            # Recommendation = json.loads(extract_json(rec_response))
+            # st.write("**Recommendations**")
+            # for recommendation in Recommendation["Recommendations"]:
+            #     st.markdown(f"- {recommendation}")
+            # st.markdown(
+            #     """
+            #     <style>
+            #     [dara-testid="stMarkdownContainer"] ul{
+            #                 padding-left:40px;
+            #     }
+            #     </style>
+            #     """,
+            #     unsafe_allow_html=True,
+            # )
 
     if st.session_state["Report"] and not report_displayed:
         display_report()
