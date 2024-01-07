@@ -98,14 +98,14 @@ def main():
             else:
                 st.write(Overview["Relevant Industries"])
 
-                with st.spinner("Generating Sustainability Report..."):
-                    sus_assistant = get_assistant(
-                        "Sustainability Assistant",
-                        ip.SUSTAINABILITY_INSTRUCTIONS,
-                        problem_text,
-                        solution_text,
-                        assistant_files,
-                    )
+            with st.spinner("Generating Sustainability Report..."):
+                sus_assistant = get_assistant(
+                    "Sustainability Assistant",
+                    ip.SUSTAINABILITY_INSTRUCTIONS,
+                    problem_text,
+                    solution_text,
+                    assistant_files,
+                )
 
                 sus_thread, sus_response = generate_response(
                     sus_assistant,
