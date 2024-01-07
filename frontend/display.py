@@ -11,7 +11,21 @@ def display_report():
     st.subheader("Overview")
     st.write(Overview["Overview"])
     st.subheader("Relevant Industries")
-    st.write(Overview["Relevant Industries"])
+    if type(Overview["Relevant Industries"]) == list:
+        for i, industry in enumerate(Overview["Relevant Industries"]):
+            st.markdown(f"- {industry}")
+        st.markdown(
+            """
+        <style>
+        [dara-testid="stMarkdownContainer"] ul{
+                    padding-left:40px;
+        }
+        </style>
+        """,
+            unsafe_allow_html=True,
+        )
+    else:
+        st.write(Overview["Relevant Industries"])
 
     with st.expander("Sustainability", expanded=True):
         st.markdown(
