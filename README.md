@@ -1,7 +1,7 @@
 # Generative AI Idea Validator for Circular Economy
 
 ## Product Demo
-[Click Here](https://youtu.be/TtAOFv34s8A)
+[Click Here](https://youtu.be/YyieH08NbZg)
 
 ## Presentation Slides
 [Click Here](GenAI%20Earth%20Hack%20Slides.pdf)
