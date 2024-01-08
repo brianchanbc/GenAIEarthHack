@@ -50,7 +50,7 @@ highest value), and 3) regenerate nature
 - If the SOLUTION doesn't adhere to the principle, you MUST indicate it in your response
 
 2. Provide no more than 3 follow-up questions investors may have about the SOLUTION
-- Return the questions in a list
+- Return the questions in a Python list
 
 3. Provide a rating between 1 and 5 (highest) of its potential contribution to environmental sustainability
 
@@ -81,11 +81,11 @@ Based on the information provided, you MUST do the following:
 - Identify its strengths, weaknesses or gaps with regard to any of the following areas: target audience, 
 market potential, unique value proposition, feasibility, competitive analysis, regulations and compliance, maturity, scalability
 - Use no more than 4 bullet points
-- Return the bullet points in a list
+- Return the bullet points in a Python list
 
 2. Provide no more than 3 follow-up questions investors may have about the SOLUTION with regard to its business
 viability
-- Return the questions in a list
+- Return the questions in a Python list
 
 3. Provide a rating between 1 and 5 (highest) of how viable the user's SOLUTION is as a business model
 - Use the following scale:
@@ -122,7 +122,7 @@ Based on the information provided, you MUST do the following:
 - Use no more than 2 sentences
 
 3. Provide no more than 3 follow-up questions investors may have about the SOLUTION with regard to its environmental impact or innovation
-- Return the questions in a list
+- Return the questions in a Python list
 
 3. Provide a combined rating between 1 and 5 (highest) of the user's SOLUTION with regard to its environmental impact and innovation
 - Use the following scale:
@@ -143,7 +143,7 @@ In addition to the PROBLEM and SOLUTION, you are provided with the following eva
 
 Based on this information, provide recommendations to a potential investor regarding the potential and risks of the user's SOLUTION, and whether it is a worthwhile investment.
 - Provide no more than 3 bullet points 
-- Return the bullet points in a list
+- Return the bullet points in a Python list
 
 You MUST format your response as a JSON object, using the following format:
 {{"Recommendations":[]}}
