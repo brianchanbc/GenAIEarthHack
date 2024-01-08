@@ -47,6 +47,7 @@ pip install -r requirements.txt
 3. **Insert OpenAI API Key**
 ```bash
 echo "OPENAI_API_KEY=your_api_key_here" >> .env
+echo "OPENAI_MODEL=your_model_here" >> .env
 ```
 
 4. **Run App**
