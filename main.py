@@ -1,11 +1,9 @@
 import json
-import os
-from urllib import response
 import dotenv
 import streamlit as st
 from backend.threads import process_uploaded_files, generate_response, get_assistant
 import backend.instructions_and_prompts as ip
-from backend.utils import extract_json, generate_recommendation_input
+from backend.utils import extract_json
 from frontend.display import display_report
 
 # Load OpenAI API key
