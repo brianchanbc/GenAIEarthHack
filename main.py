@@ -51,12 +51,8 @@ def main():
             st.error("Please upload or input contents.")
         else:
             report_displayed = True
-            # flag = True
-            # file_ids = []
-            # uploaded_logs = []
             st.session_state["show_report"] = True
             st.session_state["uploaded_button_clicked"] = True
-            # st.session_state["messages"] = []
 
             with st.spinner("Processing Input..."):
                 st.session_state["assistant"] = get_assistant(
@@ -75,7 +71,6 @@ def main():
 
             # Display JSON Data
             st.title("Project Evaluation Report")
-            # print(st.session_state["general_assistant"])
             Overview = json.loads(extract_json(general_response))
             st.session_state["Report"]["Overview"] = Overview
             st.header("Report Overview")
@@ -111,7 +106,6 @@ def main():
                     sus_assistant,
                     ip.SUSTAINABILITY_PROMPT,
                 )
-                print("Sustainability Response:", sus_response)
 
             Sustainability = json.loads(
                 extract_json(sus_response.replace("```json", "").replace("```", ""))
@@ -158,7 +152,6 @@ def main():
                     bus_assistant,
                     ip.BUSINESS_PROMPT,
                 )
-                print("Business Response:", bus_response)
 
             Business = json.loads(
                 extract_json(bus_response).replace("```json", "").replace("```", "")
@@ -210,7 +203,6 @@ def main():
                     imp_assistant,
                     ip.IMPACT_INNOVATION_PROMPT,
                 )
-                print("Impact & Innovation Response:", imp_response)
 
             Impact_Innovation = json.loads(
                 extract_json(imp_response.replace("```json", "").replace("```", ""))
@@ -236,37 +228,6 @@ def main():
                 rating = Impact_Innovation["Rating"]
                 star_emoji_string = "⭐" * int(rating)
                 st.markdown(f"**Rating:** {star_emoji_string}")
-
-            # rec_input = generate_recommendation_input(
-            #     Sustainability, Business, Impact_Innovation
-            # )
-
-            # rec_input = generate_recommendation_input(
-            #     Sustainability, Business, "It is very innovative"
-            # )
-
-            # with st.spinner("Processing Input..."):
-            #     rec_thread, rec_response = generate_response(
-            #         st.session_state["assistant"],
-            #         ip.RECOMMENDATION_PROMPT.format(generated_assessments=rec_input),
-            #         st.session_state["thread"],
-            #     )
-            #     print("Recommendation Response:", rec_response)
-
-            # Recommendation = json.loads(extract_json(rec_response))
-            # st.write("**Recommendations**")
-            # for recommendation in Recommendation["Recommendations"]:
-            #     st.markdown(f"- {recommendation}")
-            # st.markdown(
-            #     """
-            #     <style>
-            #     [dara-testid="stMarkdownContainer"] ul{
-            #                 padding-left:40px;
-            #     }
-            #     </style>
-            #     """,
-            #     unsafe_allow_html=True,
-            # )
 
     if st.session_state["Report"] and not report_displayed:
         display_report()
