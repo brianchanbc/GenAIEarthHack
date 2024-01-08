@@ -3,6 +3,7 @@
 ## Product Demo
 
 ## Presentation Slides
+[Click Here](GenAI%20Earth%20Hack%20Slides.pdf)
 
 ## Overview
 
