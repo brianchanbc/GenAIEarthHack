@@ -1,6 +1,7 @@
 # Generative AI Idea Validator for Circular Economy
 
 ## Product Demo
+[Click Here](https://youtu.be/TtAOFv34s8A)
 
 ## Presentation Slides
 [Click Here](GenAI%20Earth%20Hack%20Slides.pdf)
@@ -45,7 +46,7 @@ activate earthhack
 pip install -r requirements.txt 
 ```
 
-3. **Insert OpenAI API Key**
+3. **Insert OpenAI API Key and Specify Model**
 ```bash
 echo "OPENAI_API_KEY=your_api_key_here" >> .env
 echo "OPENAI_MODEL=your_model_here" >> .env
